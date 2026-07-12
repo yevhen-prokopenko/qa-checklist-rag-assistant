@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "QA Checklist Assistant (RAG)",
+  "version": "0.1.0",
+  "description": "Suggests checklist improvements from past verified cases. Human stays in control.",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": [
+    "https://*.atlassian.net/*",
+    "http://localhost:8000/*"
+  ],
+  "action": {
+    "default_title": "QA Checklist Assistant",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.atlassian.net/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"]
+    }
+  ],
+  "background": { "service_worker": "background.js" }
+}

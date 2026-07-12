@@ -1,0 +1,16 @@
+{
+  "source_key": "KAN-4",
+  "domain": "wms-inbound",
+  "task": "Implement LPN generation and validation on inbound receiving. Each incoming pallet unit gets a traceable License Plate Number; validate against staging queue to prevent duplicates.",
+  "checklist": [
+    "Vendor barcode is validated against inbound_staging_queue to prevent duplicates",
+    "If no barcode exists, a unique UUID-based LPN is generated",
+    "API returns 201 Created and triggers LPN label printing",
+    "Manual vendor selection is limited to the active counterparties list",
+    "Negative: duplicate barcode -> duplication warning, no second registration",
+    "Edge: barcode present but not in queue -> clear error, pallet sent to quarantine, NOT accepted silently",
+    "Edge: label printer offline -> registration state stays consistent with a retry path",
+    "Audit: who registered the pallet, when, and by which method (scan/manual)"
+  ],
+  "approved": true
+}

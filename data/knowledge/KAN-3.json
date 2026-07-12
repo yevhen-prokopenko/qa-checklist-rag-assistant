@@ -1,0 +1,17 @@
+{
+  "source_key": "KAN-3",
+  "domain": "oms-routing",
+  "task": "Geo-based multi-warehouse order balancing. Route orders to the optimal fulfillment center by inventory and distance; split only if a single node cannot fulfill.",
+  "checklist": [
+    "Routing engine evaluates stock availability across all nodes",
+    "Lowest shipping cost is calculated from customer ZIP",
+    "Single-node fulfillment is preferred when possible",
+    "Order is split into multiple shipments only when no single node can fulfill it",
+    "Negative: zero stock across all nodes -> order flagged as backorder, NOT routed to an empty node",
+    "Edge: a node goes offline mid-routing -> order re-routes, no silent drop",
+    "Edge: tie in cost/distance between nodes -> deterministic tie-break rule applied",
+    "Partial stock at the cheapest node -> split logic weighs cost trade-off correctly",
+    "Audit: routing decision and its reason are logged"
+  ],
+  "approved": true
+}

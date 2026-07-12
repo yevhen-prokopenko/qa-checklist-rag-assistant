@@ -1,0 +1,16 @@
+{
+  "source_key": "KAN-10",
+  "domain": "oms-order-tracking",
+  "task": "Background worker architecture for order state tracking. Distributed workers track and log order state transitions so the customer portal shows accurate real-time status.",
+  "checklist": [
+    "Workers listen to state transition events (Created -> Picked -> Shipped)",
+    "Logs are aggregated with a retry mechanism for failed database writes",
+    "Customer portal API reads the latest state with < 1s latency",
+    "Negative: unknown/out-of-order event -> rejected or queued, not silently applied",
+    "Edge: worker crashes mid-transition -> retry does not create a duplicate state entry (idempotency)",
+    "Edge: two workers process the same order concurrently -> last-write-wins rule is explicit and correct",
+    "Failed DB write after N retries -> alert is raised, event is not silently dropped",
+    "Audit: every state transition is timestamped and traceable to the triggering event"
+  ],
+  "approved": true
+}

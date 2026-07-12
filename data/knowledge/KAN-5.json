@@ -1,0 +1,15 @@
+{
+  "source_key": "KAN-5",
+  "domain": "qa-tooling",
+  "task": "Order SLA manipulation tool for test environments. Override order timestamps in Staging to trigger and test SLA breach alerts without waiting in real time.",
+  "checklist": [
+    "Internal UI can override timestamp fields for test orders",
+    "Tool bypasses immutable DB constraints in Staging ONLY",
+    "SLA background jobs pick up the manipulated dates and fire breach alerts",
+    "Negative: tool is disabled/blocked in Production",
+    "Edge: invalid or backwards dates -> validation error, no corrupt state",
+    "Permissions: only QA role can access the tool",
+    "Audit: every override is logged (who / what / when)"
+  ],
+  "approved": true
+}

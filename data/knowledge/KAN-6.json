@@ -1,0 +1,16 @@
+{
+  "source_key": "KAN-6",
+  "domain": "qa-infrastructure",
+  "task": "Provision an isolated hardware-simulation staging environment for the conveyor (WCS), with mock PLC controllers, so WCS logic can be tested without disrupting the primary QA environment.",
+  "checklist": [
+    "Terraform scripts provision a dedicated cluster for WCS testing",
+    "Mock PLC service simulates hardware responses realistically",
+    "Network rules prevent this environment from reaching production queues",
+    "Negative: attempt to point the isolated env at production -> blocked by network policy",
+    "Edge: mock PLC returns an error/timeout -> WCS logic handles it the same way as real hardware would",
+    "Environment teardown does not leave orphaned cloud resources",
+    "Access to this environment is restricted to the WCS/QA team",
+    "Audit: provisioning and teardown actions are logged"
+  ],
+  "approved": true
+}

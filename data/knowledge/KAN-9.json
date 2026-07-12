@@ -1,0 +1,16 @@
+{
+  "source_key": "KAN-9",
+  "domain": "scm-procurement",
+  "task": "Price variance guardrail for automated purchase orders. Validate vendor price against average in-stock cost before PO generation; halt if it exceeds threshold and suggest internal stock.",
+  "checklist": [
+    "PO creation halts if vendor price > (average stock price + threshold)",
+    "Halted PO is flagged PRICE_VARIANCE_EXCEEDED",
+    "Alert is sent to the procurement dashboard for manual review",
+    "System suggests using free internal stock instead of ordering",
+    "Negative: vendor price within threshold -> PO proceeds normally",
+    "Edge: no comparable in-stock item exists -> defined fallback behavior, no crash",
+    "Edge: price exactly equals the threshold -> inclusive/exclusive rule is explicit and correct",
+    "Currency and rounding are consistent in the comparison"
+  ],
+  "approved": true
+}

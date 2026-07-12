@@ -1,0 +1,16 @@
+{
+  "source_key": "KAN-2",
+  "domain": "wcs-conveyor",
+  "task": "End-to-end test suite for conveyor-to-shipping gateway integration. Validate the full flow from sorter assignment to courier dispatch, guaranteeing zero regressions in tracking number assignment.",
+  "checklist": [
+    "Automated script simulates PLC package drops into courier chutes",
+    "Shipping Provider APIs receive correct weight/dimensions",
+    "Tracking labels are correctly generated and mapped to the order",
+    "Negative: package drop with missing weight -> flagged, not shipped with default/zero weight",
+    "Edge: courier API is temporarily unavailable -> package is held/retried, not lost or misrouted",
+    "Edge: same order processed twice by the sorter (double drop) -> only one tracking number is issued",
+    "Cross-check: chute-to-courier mapping matches the configured routing table",
+    "Regression: previous known ASB-1247 cancellation reset scenario still passes end-to-end"
+  ],
+  "approved": true
+}

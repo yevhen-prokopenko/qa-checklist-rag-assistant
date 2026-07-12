@@ -1,0 +1,10 @@
+{
+  "source_key": "KAN-11",
+  "domain": "wms-transfer",
+  "task": "WMS-1400: Transfer stock to a destination warehouse that is mid-closure. When a destination warehouse is being decommissioned, incoming transfers must be handled safely (re-route, partial transfer, rollback).",
+  "tester_checklist": [
+    "Create a transfer to an open warehouse",
+    "Check the transfer appears in the destination inbound list"
+  ],
+  "note": "HELD-OUT demo input (NOT ingested into the knowledge base). The tester's checklist is deliberately thin/obvious. Expected: RAG retrieves WMS-560 (transfers) + DOM-4033 (multi-warehouse) + WCS-1247 (rollback pattern) and proposes edge-case checks (rollback on rejection, re-route when destination closed, partial transfer, duplicate LPN, SLA, audit) each with a 'why'."
+}

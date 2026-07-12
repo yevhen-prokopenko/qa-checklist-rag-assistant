@@ -1,0 +1,16 @@
+{
+  "source_key": "KAN-8",
+  "domain": "scm-claims",
+  "task": "Vendor claim workflow for inbound discrepancies. Automatically log quantity shortages/damages during inbound processing and link them to the PO for vendor claims.",
+  "checklist": [
+    "System calculates expected vs. received quantities per PO line",
+    "Discrepancy automatically generates a Claim Record linked to the PO",
+    "Vendor metric counters (/requested, /fill-list) are updated in real time",
+    "Negative: quantities match -> no claim is created",
+    "Edge: partial shipment across multiple pallets -> discrepancy is aggregated per PO, not per pallet",
+    "Edge: damaged item vs. missing item -> classified with different claim reason codes",
+    "Duplicate scan of the same unit does not double-count the discrepancy",
+    "Audit: claim creation includes PO id, expected qty, received qty, and operator"
+  ],
+  "approved": true
+}

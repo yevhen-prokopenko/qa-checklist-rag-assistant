@@ -1,0 +1,17 @@
+{
+  "source_key": "KAN-7",
+  "domain": "wms-transfer",
+  "task": "Automate Putaway and Replenishment transfers from Receiving to Storage/Picking zones. Route items by dimension and demand.",
+  "checklist": [
+    "Transfer task is auto-created once inbound receiving is completed",
+    "Oversized items are routed to Bulk Storage; standard items to Active Picking",
+    "Handheld device shows putaway tasks prioritized by urgency",
+    "Negative: inbound not completed -> no transfer task is created",
+    "Edge: item with missing dimensions -> routed to fallback zone and flagged, NOT silently dropped",
+    "Edge: destination zone is full -> task is queued/blocked with a clear status, not lost",
+    "Rollback: if putaway confirmation fails mid-way, stock quantities stay consistent (no double-count)",
+    "Concurrency: two workers scan the same LPN -> only one transfer succeeds",
+    "Audit: every transfer logs source zone, destination zone, worker and timestamp"
+  ],
+  "approved": true
+}

@@ -1,0 +1,16 @@
+{
+  "source_key": "KAN-1",
+  "domain": "wcs-conveyor",
+  "task": "Sorter tray routing data reset on order cancellation. When a parent order is cancelled mid-conveyance, clear the sorter tray routing so empty/cancelled boxes go to the rejection lane instead of shipping.",
+  "checklist": [
+    "WCS listens for ORDER_CANCELLED webhooks from OMS",
+    "System sends CLEAR_TRAY_ROUTING command to the PLC",
+    "Tray payload is wiped -> box defaults to the rejection lane",
+    "Negative: non-cancelled order -> routing is untouched",
+    "Edge: cancellation arrives after the box already shipped -> safe no-op, no invalid command",
+    "Edge: PLC acknowledgement missing/timeout -> retry; box is NOT routed to courier by stale data",
+    "Race: cancel and sort-assignment near-simultaneous -> deterministic outcome",
+    "Audit: cancellation -> clear command -> outcome are logged end to end"
+  ],
+  "approved": true
+}
