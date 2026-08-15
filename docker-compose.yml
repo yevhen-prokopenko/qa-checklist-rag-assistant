@@ -13,5 +13,16 @@ services:
       - rag_demo_pgdata:/var/lib/postgresql/data
       - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
 
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: rag_demo_n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+
 volumes:
   rag_demo_pgdata:
+  n8n_data:
+

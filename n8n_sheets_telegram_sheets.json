@@ -1,0 +1,151 @@
+{
+  "id": "24c8b21c-a3c2-488f-9a4f-56bbcc36b9e2",
+  "name": "Google Sheets -> Telegram -> Google Sheets",
+  "active": false,
+  "versionId": "8d7c4912-32b0-4ca0-880c-7b0a70129031",
+  "meta": {
+    "instanceId": "local-instance"
+  },
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "18f9215c-3f9c-4613-baeb-5e045cb2b5cf",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        100,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "spreadsheetId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "options": {}
+      },
+      "id": "4e1a0670-38bd-4d0f-ba2b-0ffc3b0dfcb6",
+      "name": "Google Sheets (Read)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        320,
+        240
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "placeholder-credential-google-sheets",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_CHAT_ID",
+        "text": "=Сообщение из первой таблицы: {{ $json[\"ИмяКолонки\"] }}",
+        "additionalFields": {}
+      },
+      "id": "bc8c7d0d-ee4e-4f5b-9d4f-3ff8bb26c367",
+      "name": "Telegram (Send)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        540,
+        240
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "placeholder-credential-telegram",
+          "name": "Telegram Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "spreadsheetId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Сообщение": "={{ $json.text }}",
+            "Дата отправки": "={{ new Date().toISOString() }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "df2a9d2d-2f04-4d8e-9905-59b4e7235b2e",
+      "name": "Google Sheets (Write)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        760,
+        240
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "placeholder-credential-google-sheets",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets (Read)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets (Read)": {
+      "main": [
+        [
+          {
+            "node": "Telegram (Send)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram (Send)": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets (Write)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

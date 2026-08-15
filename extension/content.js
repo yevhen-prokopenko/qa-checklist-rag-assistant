@@ -40,7 +40,26 @@ function findDescriptionWrapper() {
 }
 
 function getIssueKey() {
-  return (location.pathname.match(/[A-Z]+-\d+/) || [])[0];
+  // 1. Try to get selectedIssue from query parameters (common in Jira list views)
+  const params = new URLSearchParams(location.search);
+  const selectedIssue = params.get("selectedIssue");
+  if (selectedIssue && /^[A-Z]+-\d+$/.test(selectedIssue)) {
+    return selectedIssue;
+  }
+
+  // 2. Try to match issue key in the pathname (e.g. /browse/KAN-22)
+  const pathMatch = location.pathname.match(/[A-Z]+-\d+/);
+  if (pathMatch) {
+    return pathMatch[0];
+  }
+
+  // 3. Fallback to matching issue key in the hash
+  const hashMatch = location.hash.match(/[A-Z]+-\d+/);
+  if (hashMatch) {
+    return hashMatch[0];
+  }
+
+  return null;
 }
 
 function isDarkMode() {
