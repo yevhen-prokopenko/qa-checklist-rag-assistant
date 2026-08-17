@@ -1,40 +1,26 @@
 # yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
 
-# Learn more about building a configuration: https://promptfoo.dev/docs/configuration/guide
-
-description: "My eval"
+description: "RAG Checklist Assistant Evaluation (Full Jira Provenance View)"
 
 prompts:
-  - "Write a tweet about {{topic}}"
-  - "Write a concise, funny tweet about {{topic}}"
-  
+  - "Task: {{input_task}}"
 
 providers:
-  - "openai:gpt-5-mini"
-  - "openai:gpt-5"
-  
+  - id: "file://eval_provider.py"
+    config:
+      pythonExecutable: "/Users/eugeneprokopenko/Projects/rag_checklist/.venv/bin/python"
 
-tests:
-  - vars:
-      topic: bananas
+defaultTest:
+  assert:
+    - type: llm-rubric
+      value: >
+        The output is a complete Jira Checklist table with Provenance tags (🧑 Human and 🤖 AI).
+        
+        Evaluate the following criteria:
+        1. Human items (🧑 Human) correctly preserve the tester's original draft: "{{tester_draft}}".
+        2. AI items (🤖 AI) properly supplement the checklist with the missing edge cases:
+           {{expected_aspects}}
+        3. Each AI item has a meaningful rationale in the "Why / Reason" column.
+        4. The AI items do NOT duplicate the tester's original human items.
 
-  - vars:
-      topic: avocado toast
-    assert:
-      # For more information on assertions, see https://promptfoo.dev/docs/configuration/expected-outputs
-
-      # Make sure output contains the word "avocado"
-      - type: icontains
-        value: avocado
-
-      # Prefer shorter outputs
-      - type: javascript
-        value: 1 / (output.length + 1)
-
-  - vars:
-      topic: new york city
-    assert:
-      # For more information on model-graded evals, see https://promptfoo.dev/docs/configuration/expected-outputs/model-graded
-      - type: llm-rubric
-        value: ensure that the output is funny
-
+tests: datasets/golden_dataset.csv
