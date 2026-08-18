@@ -1,39 +1,50 @@
-# Тест-дизайн для RAG системы (QA Assistant)
+# 15. Test Design & Evaluation Strategy for RAG Assistant
 
-## 1. Цель (Goal)
-Разработать надежную стратегию оценки (evaluation strategy) для QA RAG Assistant с использованием `promptfoo`. Система работает как **Копайлот / Ревьюер (Copilot / Reviewer)** для QA-инженеров. Это значит, что она не генерирует тест-кейсы с нуля, а анализирует черновик (draft), написанный тестировщиком, и предлагает недостающие проверки на основе проверенной Базы Знаний (Knowledge Base, KB).
+## 1. Goal
+Design a robust evaluation and testing harness for the **QA RAG Assistant** using `promptfoo`. The system operates as an **AI Copilot / Reviewer** for QA engineers. It is not designed to generate test cases from a blank slate; instead, it analyzes a preliminary draft written by a human tester and suggests missing edge cases and safety checks based on a verified Knowledge Base (KB) of past production incidents.
 
-## 2. Ключевые риски (Key Risks / Failure Modes)
-Процесс оценки (evaluation) должен тестировать следующие распространенные ошибки RAG-систем (failure modes):
+---
 
-1. **Галлюцинации (Faithfulness / Hallucination):** Ассистент выдумывает проверки или шаги, которых нет в Базе Знаний.
-2. **Неполнота (Recall / Completeness):** Ассистент не предлагает критически важные проверки, которые присутствуют в Базе Знаний.
-3. **Нерелевантность / Болтливость (Relevance / Verbosity):** Ассистент предлагает проверки от совершенно других задач, добавляет ненужную "воду" или предлагает те пункты, которые тестировщик уже написал.
-4. **Сломанный формат (Instruction Following):** Ассистент не может вернуть данные в требуемом формате (например, строгий JSON с полями `item` и `why`).
+## 2. Key Risks & Failure Modes
+The evaluation harness is designed to detect and measure four primary failure modes common to RAG systems:
 
-## 3. Ограничения ввода и сценарии (Input Constraints & Scenarios)
-По задумке (by design), система заставляет тестировщика написать начальный черновик (отправка пустых запросов запрещена). Поэтому Эталонный Датасет (Golden Dataset) должен симулировать различные состояния черновика тестировщика (tester draft).
+1. **Faithfulness / Hallucination:** The assistant invents checks or technical assertions that have no grounding in the indexed Knowledge Base.
+2. **Recall / Completeness:** The assistant fails to retrieve and recommend critical edge cases that exist in past verified cases.
+3. **Relevance / Deduplication:** The assistant suggests irrelevant checks from unrelated domains or duplicates checks already written by the human tester.
+4. **Instruction Following & Format:** The assistant fails to adhere to structural constraints (e.g., returning valid JSON with `item` and `why` justifications, or preserving table provenance).
 
-### Поддерживаемые сценарии для Golden Dataset:
-* **Сценарий 1: Частичный ввод (Partial Input) — Самый частый**
-  * *Пример для проверки (Демо-задача `KAN-11`):* WMS-1400: Transfer stock to a destination warehouse that is mid-closure.
-  * *Черновик тестировщика (Tester Draft):*
-    1. Create a transfer to an open warehouse
-    2. Check the transfer appears in the destination inbound list
-  * *Ожидаемый результат (Expected Output):* RAG-система должна предложить недостающие edge-кейсы: Rollback при отклонении назначения (откат транзакции), Ре-роутинг при закрытом складе назначения, Частичный трансфер, Audit-лог и логирование действий.
-* **Сценарий 2: Идеальный ввод (Perfect Input)**
-  * *Черновик тестировщика (Tester Draft):* Содержит все 5 требуемых проверок.
-  * *Ожидаемый результат (Expected Output):* RAG-система должна вернуть пустой список (без предложений).
+---
 
-*Примечание: Сценарий "Ошибочный ввод" (Wrong Input) — когда тестировщик пишет проверки для совершенно другой задачи — в данный момент **не поддерживается по задумке (unsupported by design)**. Системный промпт (system prompt) в `backend/llm.py` явно гласит: `"never suggest removing or rewriting what the tester already has."` (никогда не предлагай удалять или переписывать то, что тестировщик уже имеет).*
+## 3. Input Constraints & Scenarios
+By design, the application enforces a **write-first policy** (empty checklist submissions are blocked to prevent human cognitive offloading). The Golden Dataset simulates realistic tester behaviors and draft states:
 
-## 4. Достоверность тестов и архитектура (Test Fidelity / Parity)
-Чтобы гарантировать, что тесты точно отражают работу реального приложения (production application), и избежать необходимости поддерживать два разных промпта, мы применяем следующую архитектуру:
+* **Scenario A: Thin / Basic Draft (Most Frequent):**
+  * *Context (`KAN-11`):* `WMS-1400: Transfer stock to a destination warehouse that is mid-closure.`
+  * *Tester Draft:* Basic happy-path creation and listing.
+  * *Expected Output:* RAG supplements the draft with missing edge cases: Rollback on destination rejection, Re-routing when closed, Partial transfer logic, and Audit logging.
+* **Scenario B: Deduplication on Partial Drafts:**
+  * *Tester Draft:* Tester already included a check for Rollback or Re-route.
+  * *Expected Output:* RAG must supplement other missing checks while **strictly avoiding duplicate suggestions** for the already covered topic.
+* **Scenario C: Full Coverage / Senior Tester:**
+  * *Tester Draft:* All 6 necessary checks are already covered.
+  * *Expected Output:* RAG returns an empty list (`[]` / `NOTHING TO ADD`), avoiding unnecessary noise or over-generation.
+* **Scenario D: Informal / Colloquial Input:**
+  * *Tester Draft:* Abbreviated slang (`1 make transfer to open wh; 2 check dest inbound`).
+  * *Expected Output:* Semantic normalization and grounded professional recommendations.
 
-* **Отсутствие дублирования промпта (No Prompt Duplication):** Файл `promptfooconfig.yaml` **не** будет содержать захардкоженную копию LLM промпта.
-* **Пользовательский Python провайдер (Custom Python Provider):** `promptfoo` будет настроен на использование кастомного Python провайдера (`eval_provider.py`). Этот скрипт будет напрямую импортировать и выполнять реальную логику бэкенда приложения (`backend/rag_pipeline.py`).
-* **100% Идентичность (100% Parity):** Поскольку Promptfoo и API пользовательского интерфейса будут выполнять абсолютно одну и ту же Python-функцию, достоверность тестов (test fidelity) гарантирована математически. Любые изменения, внесенные разработчиками в промпт в файле `llm.py`, будут автоматически протестированы Promptfoo при следующем запуске.
+> **Design Constraint Note:** The system prompt in `backend/llm.py` explicitly enforces `"never suggest removing or rewriting what the tester already has"`. The assistant serves strictly as an additive reviewer.
 
-## 5. Разделение зон ответственности (Division of Testing Responsibilities)
-* **Promptfoo (Оффлайн оценки / Offline Evals):** Тестирует "Мозг" (Brain) приложения. Использует LLM в качестве судьи (LLM-as-a-judge) для оценки смысловой правильности, полноты и форматирования предложений.
-* **Playwright (UI тесты / UI Tests):** Тестирует "Трубы" (Plumbing). Используется только для 1-2 дымовых тестов (smoke tests), чтобы убедиться, что сетевые запросы проходят успешно, загрузчики (spinners) отрисовываются, а элементы UI (например, бейджики "AI generated") отображаются корректно. Playwright **не** используется для оценки качества ответа LLM из-за недетерминированной природы языковых моделей (non-deterministic nature).
+---
+
+## 4. Architecture & 100% Test Parity
+To ensure that automated evaluation accurately mirrors production behavior without the overhead of maintaining duplicate prompts:
+
+* **Zero Prompt Duplication:** `promptfooconfig.yaml` does not hardcode a secondary copy of the LLM prompt.
+* **Custom Python Provider (`eval_provider.py`):** Promptfoo calls a Python bridge that directly executes the application's actual backend pipeline (`backend/rag_pipeline.py`).
+* **100% In-Memory Parity:** Because Promptfoo and the Chrome extension / Jira API invoke the exact same Python function with identical vector search parameters (`pgvector`), test fidelity is mathematically guaranteed. Any modification to `llm.py` or `rag_pipeline.py` is immediately reflected in the evaluation suite.
+
+---
+
+## 5. Architectural Separation of Responsibilities
+* **Promptfoo Evaluation Harness (In-Memory Engine):** Evaluates the core AI brain—semantic correctness, retrieval recall, deduplication logic, and security guardrails—using deterministic assertions and LLM-as-a-judge rubrics.
+* **Chrome Extension & FastAPI Layer:** Provides the UI integration, handling Jira Document Format (ADF) parsing, user provenance tags (`🧑 Human` / `🤖 AI`), and Jira REST API synchronization (`/apply-to-jira`).

@@ -27,6 +27,8 @@ def call_api(prompt, options, context):
     try:
         vars_dict = context.get("vars", {}) if context else {}
         task_text = vars_dict.get("input_task", "")
+        if not task_text and prompt:
+            task_text = str(prompt)
         
         # Parse tester draft into a list of checklist items
         tester_draft_raw = vars_dict.get("tester_draft", "")
