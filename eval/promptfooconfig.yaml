@@ -18,9 +18,9 @@ defaultTest:
         
         Evaluate the following criteria:
         1. Human items (🧑 Human) correctly preserve the tester's original draft: "{{tester_draft}}".
-        2. AI items (🤖 AI) properly supplement the checklist with the missing edge cases:
+        2. AI items (🤖 AI) properly address and satisfy the expected criteria:
            {{expected_aspects}}
-        3. Each AI item has a meaningful rationale in the "Why / Reason" column.
-        4. The AI items do NOT duplicate the tester's original human items.
+        3. If AI items are suggested, each has a meaningful rationale in the "Why / Reason" column citing past cases or best practices.
+        4. The AI items do NOT duplicate the tester's original human items and strictly obey any "MUST NOT", "MUST REFUSE", or "MUST BE EMPTY" constraints listed in {{expected_aspects}}.
 
 tests: datasets/golden_dataset.csv
