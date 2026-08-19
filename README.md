@@ -121,6 +121,25 @@ If the checklist is missing or empty, the extension shows a clear error and a te
 
 ---
 
+## Evaluation (Promptfoo)
+
+Building the tool is only half the job. The other half is proving it does what it claims, since LLM output is not deterministic and cannot be checked with a simple equality assertion.
+
+**Held-out evaluation.** Tasks `KAN-1` to `KAN-10` are indexed in the knowledge base. `KAN-11` is deliberately kept out of the index. This is not about the system having no data: it still retrieves from the same knowledge base as always. It is about preventing data leakage. If `KAN-11` were indexed too, the system could retrieve a near-identical match of itself and pass the test by lookup, not by generalizing patterns from related but different past cases (`KAN-7` transfers, `KAN-3` routing, `KAN-1` rollback logic).
+
+**Parity with the real app.** The Promptfoo test runner does not call the LLM with a hardcoded copy of the prompt. A custom Python provider (`eval/eval_provider.py`) imports and calls the same `rag_pipeline.run()` function the Chrome extension uses. Any prompt change in `backend/llm.py` is automatically covered by the next eval run, and the eval results reflect exactly what a tester would see in Jira.
+
+**What's tested.** Nine scenarios across three categories:
+- functional: does the assistant fill gaps in a thin draft, avoid duplicating what the tester already wrote, stay silent when the draft is already complete, and handle informal phrasing
+- out-of-scope traps: does it ignore fictional, non-WMS content injected into the input instead of inventing checks for it
+- redteam and security: does it resist prompt injection (instructions to reveal its system prompt or write something unrelated) and refuse destructive instructions (dropping tables, deleting audit logs)
+
+Grading combines deterministic checks (schema, duplication) with an LLM-as-judge rubric for the parts that cannot be checked with equality: completeness and groundedness.
+
+Details: [15_Test_Design_for_RAG_System.md](./15_Test_Design_for_RAG_System.md), [16_Golden_Dataset_Scenarios_KAN11.md](./16_Golden_Dataset_Scenarios_KAN11.md), code in [eval/](./eval/).
+
+---
+
 ## Honest framing
 
 This is a **demo / proof-of-concept**, not a production system. The idea originated from a real QA pain point encountered at work; everything you see here — the Jira tasks, the checklists, the "past cases" the RAG retrieves from — was **rebuilt from scratch on fictional, anonymized data**. No real company code, task descriptions, or confidential information is used. It's realistic enough to demonstrate the full algorithm end to end, and no more than that.
@@ -144,9 +163,12 @@ Neither was needed at this project's scale (10 knowledge-base tasks) to prove th
 - `extension/` — Chrome extension (Manifest V3): button injected into the Jira issue view, in-page modal, background service worker.
 - `data/knowledge/` — the 10 "past verified" QA tasks the RAG learns from (fictional, anonymized). `data/demo_tasks/` — the held-out task used for the live demo.
 - `docker-compose.yml` — Postgres + pgvector.
+- `eval/` — Promptfoo evaluation harness: custom provider, golden dataset, functional/out-of-scope/redteam test configs.
 
 ---
 
 ## 📚 Project documentation
 
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** — technical deep-dive: indexing + query pipelines, Mermaid diagrams, DB schema, parameters.
+- **[15_Test_Design_for_RAG_System.md](./15_Test_Design_for_RAG_System.md)** — evaluation strategy, failure modes, test fidelity.
+- **[16_Golden_Dataset_Scenarios_KAN11.md](./16_Golden_Dataset_Scenarios_KAN11.md)** — the 9 golden dataset test cases in detail.
